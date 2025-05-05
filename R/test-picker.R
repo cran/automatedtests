@@ -1,0 +1,133 @@
+#' Check if a dataframe is parametric (Internal Function)
+#'inst
+#'
+#' @param test_object The data to check (vector of integers).
+#' @return TRUE if data is normalized, FALSE otherwise.
+#' @keywords internal
+pick_test <- function(test_object) {
+  size <- ncol(test_object$getData())
+
+  if (size == 1) {
+    return(pick_one_variable_test(test_object))
+  }
+
+  if (size == 2) {
+    return(pick_two_variable_test(test_object))
+  }
+  return(pick_multiple_variable_test(test_object))
+}
+
+#' Pick the appropriate test for one variable (Internal Function)
+#'
+#' @param test_object An object containing the data, data types, and comparison value.
+#' @return A character string with the name of the appropriate one-sample statistical test.
+#' @keywords internal
+pick_one_variable_test <- function(test_object) {
+  stopifnot(!is.null(test_object$getCompareTo()) || !is.numeric(test_object$getCompareTo()))
+
+  # Qualitative
+  if (test_object$getDatatypes()[1] == "Qualitative") {
+    group_size <- length(unique(test_object$getData()[[1]]))
+    stopifnot(group_size > 1)
+    if (length(unique(test_object$getData()[[1]])) < 3) {
+      return("One-proportion test")
+    }
+    return("Chi-square goodness-of-fit test")
+  }
+
+  # Quantitative
+  if (test_object$isParametric()) {
+    return("One-sample Student's t-test")
+  }
+
+  return("One-sample Wilcoxon test")
+}
+
+#' Pick the appropriate test for two variables (Internal Function)
+#'
+#' @param test_object An object containing the data, types, and metadata needed for test selection.
+#' @return A character string with the name of the appropriate statistical test.
+#' @keywords internal
+pick_two_variable_test <- function(test_object) {
+  types <- test_object$getDatatypes()
+  data <- test_object$getData()
+
+  # Quantitative & Quantitative
+  if (types[1] == "Quantitative" && types[2] == "Quantitative") {
+    if (test_object$isParametric()) {
+      return("Pearson correlation")
+    }
+    return("Spearman's rank correlation")
+  }
+
+  # Qualitative & Qualitative
+  if (types[1] == "Qualitative" && types[2] == "Qualitative") {
+
+    # USING COCHRAN for paired instead
+    #if (length(unique(data[1])) > 2 || length(unique(data[2])) > 2) {
+    #  return("Chi-square test of independence")
+    #}
+
+    if (test_object$isPaired()) {
+      if (length(unique(data[1])) > 2 || length(unique(data[2])) > 2) {
+        return("Cochran's Q test")
+      }
+      return("McNemar's test")
+    }
+    table_data <- table(data[[1]], data[[2]])
+    chi_result <- chisq.test(table_data)
+
+    # If frequency >= 5
+    if (all(chi_result$expected >= 5)) {
+      return("Chi-square test of independence")
+    }
+    return("Fisher's exact test")
+
+  }
+
+  qual_index <- which(types == "Qualitative")
+  quan_index <- which(types == "Quantitative")
+
+  # Qualitative & Quantitative
+  if (length(unique(data[[qual_index]])) > 2) {
+    if (test_object$isPaired()) {
+      if (test_object$isParametric()) {
+        return("Repeated measures ANOVA")
+      }
+      return("Friedman test")
+    }
+    if (test_object$isParametric()) {
+
+      # Equal variance test
+      if (bartlett.test(data[[quan_index]], data[[qual_index]])$p.value > 0.05) {
+        return("One-way ANOVA")
+      }
+      return("Welch's ANOVA")
+    }
+    return("Kruskal-Wallis test")
+  }
+
+}
+
+#' Pick the appropriate test for multiple variables (Internal Function)
+#'
+#' @param test_object An object containing the data, types, and metadata needed for test selection.
+#' @return A character string with the name of the appropriate regression or classification model.
+#' @keywords internal
+pick_multiple_variable_test <- function(test_object) {
+  types <- test_object$getDatatypes()
+  data <- test_object$getData()
+
+  # If binary / 2 groups
+  if (length(unique(data[[1]])) == 2 && all(unique(data[[1]]) %in% c(0, 1, TRUE, FALSE)) ||
+      !is.numeric(data[[1]]) && length(unique(data[[1]])) == 2) {
+    return("Binary logistic regression")
+  }
+
+  if (is.numeric(data[[1]])) {
+    return("Multiple linear regression")
+  }
+
+  return("Multinomial logistic regression")
+
+}
