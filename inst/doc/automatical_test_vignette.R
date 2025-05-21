@@ -25,5 +25,5 @@ print(test2$getResult())
 test3 <- automatical_test(iris$Sepal.Length, compare_to = 5)
 
 # View the result summary
-print(test3$getResult())
+print(test3$getResult()$p.value)
 

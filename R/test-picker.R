@@ -54,6 +54,17 @@ pick_two_variable_test <- function(test_object) {
 
   # Quantitative & Quantitative
   if (types[1] == "Quantitative" && types[2] == "Quantitative") {
+
+    # Paired test
+    if (test_object$isPaired()) {
+      if (test_object$isParametric()) {
+        return("Student's t-test for paired samples")
+      } else {
+        return("Wilcoxon signed-rank test")
+      }
+    }
+
+    # Correlation
     if (test_object$isParametric()) {
       return("Pearson correlation")
     }
@@ -106,6 +117,25 @@ pick_two_variable_test <- function(test_object) {
     }
     return("Kruskal-Wallis test")
   }
+
+  # Qualtitative Group size == 2
+  if (test_object$isPaired()) {
+    if (test_object$isParametric()) {
+      return("Student's t-test for paired samples")
+    }
+    return("Wilcoxon signed-rank test")
+  }
+
+  # Qualitative Group size > 2
+  if (test_object$isParametric()) {
+
+    # Equal variance test
+    if (bartlett.test(data[[quan_index]], data[[qual_index]])$p.value > 0.05) {
+      return("Student's t-test for independent samples")
+    }
+    return("Welch's t-test for independent samples")
+  }
+  return("Mann-Whitney U test")
 
 }
 

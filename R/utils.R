@@ -56,7 +56,7 @@ check_parametric <- function(data) {
 #' @importFrom stats pnorm cor.test mcnemar.test fisher.test aov oneway.test kruskal.test
 #' @importFrom stats friedman.test shapiro.test bartlett.test
 #' @importFrom nortest ad.test
-#' @importFrom RVAideMemoire cochran.qtest
+#' @importFrom DescTools CochranQTest
 #' @importFrom nnet multinom
 get_test_from_string <- function(test_object) {
   data <- test_object$getData()
@@ -176,8 +176,13 @@ get_test_from_string <- function(test_object) {
          },
 
          "Cochran's Q test" = {
-           tab <- table(data[[1]], data[[2]])
-           return(RVAideMemoire::cochran.qtest(tab))
+           wide_data <- reshape(data, timevar = names(data)[2], idvar = names(data)[1], direction = "wide")
+
+           # Drop the ID column
+           mat <- as.matrix(wide_data[ , -1])
+
+           # Perform Cochran's Q test using DescTools
+           return(DescTools::CochranQTest(mat))
          },
 
          "McNemar's test" = {
@@ -208,19 +213,19 @@ get_test_from_string <- function(test_object) {
          },
 
          "Student's t-test for paired samples" = {
-           return(t.test(
-             data[data[[qual_index]] == unique(data[[qual_index]])[1], quan_index],
-             data[data[[qual_index]] == unique(data[[qual_index]])[2], quan_index],
-             paired = TRUE
-           ))
+           if ("Qualitative" %in% test_object$getDatatypes()) {
+             data[1] <- data[data[[qual_index]] == unique(data[[qual_index]])[1], quan_index]
+             data[2] <- data[data[[qual_index]] == unique(data[[qual_index]])[2], quan_index]
+           }
+           return(t.test(data[[1]], data[[2]], paired = TRUE))
          },
 
          "Wilcoxon signed-rank test" = {
-           return(wilcox.test(
-             data[data[[qual_index]] == unique(data[[qual_index]])[1], quan_index],
-             data[data[[qual_index]] == unique(data[[qual_index]])[2], quan_index],
-             paired = TRUE
-           ))
+           if ("Qualitative" %in% test_object$getDatatypes()) {
+             data[1] <- data[data[[qual_index]] == unique(data[[qual_index]])[1], quan_index]
+             data[2] <- data[data[[qual_index]] == unique(data[[qual_index]])[2], quan_index]
+           }
+           return(wilcox.test(data[[1]], data[[2]], paired = TRUE))
          },
 
          "One-way ANOVA" = {
@@ -252,3 +257,98 @@ get_test_from_string <- function(test_object) {
 
   stop("An invalid test was chosen.")
 }
+
+#' Returns the strength of a test.
+#' This is a different kind of value for each test. It will also return what the value is.
+#' These are the different types of data it can return:
+#'
+#' This function takes a `test_object` that contains the result of a statistical test
+#' and returns the main coefficient, estimate, or test statistic as a numeric value.
+#' It supports various tests such as t-tests, ANOVAs, regressions, and correlations.
+#'
+#' @param test_object An object containing a statistical test result and metadata,
+#'        expected to have methods `getResult()` and `getTest()`.
+#'
+#' @return A named numeric value indicating the strength of the result.
+#' The type and meaning depend on the test used:
+#' \describe{
+#'   \item{coefficient}{Effect size and direction of predictors in regression}
+#'   \item{r}{Correlation strength and direction}
+#'   \item{mean difference}{Difference in group means}
+#'   \item{statistic}{Test statistic measuring group difference or association}
+#'   \item{F statistic}{Ratio of variances across groups}
+#'   \item{proportion}{Estimated success rate in the sample}
+#'   \item{non-existent}{No interpretable strength measure available}
+#' }
+#'
+#' @keywords internal
+get_strength_from_test <- function(test_object) {
+  result <- test_object$getResult()
+
+  switch(test_object$getTest(),
+
+         # Regressions — keep full coefficient vector with original names
+         "Multiple linear regression" = ,
+         "Binary logistic regression" = {
+           coefs <- coef(result)[-1]
+           return(list(coefficient = coefs))
+         },
+
+         "Multinomial logistic regression" = {
+           coefs <- result$coefficients
+           return(list(coefficient = coefs))
+         },
+
+         # Correlations — return r with fixed name
+         "Pearson correlation" = ,
+         "Spearman's rank correlation" = {
+           return(setNames(as.numeric(result$estimate), "r"))
+         },
+
+         # T-tests — return estimated mean diff or means
+         "One-sample Student's t-test" = ,
+         "Student's t-test for paired samples" = ,
+         "Student's t-test for independent samples" = ,
+         "Welch's t-test for independent samples" = {
+           est <- result$estimate
+           return(setNames(as.numeric(est), "mean difference"))
+         },
+
+         # Non-parametric — return main test statistic
+         "One-sample Wilcoxon test" = ,
+         "Wilcoxon signed-rank test" = ,
+         "Mann-Whitney U test" = ,
+         "Chi-square test of independence" = ,
+         "Chi-square goodness-of-fit test" = ,
+         "Cochran's Q test" = ,
+         "McNemar's test" = {
+           return(setNames(as.numeric(result$statistic[[1]]), "statistic"))
+         },
+
+         # ANOVA-style — extract F statistic
+         "One-way ANOVA" = ,
+         "Welch's ANOVA" = ,
+         "Repeated measures ANOVA" = ,
+         "Kruskal-Wallis test" = ,
+         "Friedman test" = {
+           if (inherits(result, "aov")) {
+             f_val <- summary(result)[[1]]$`F value`[1]
+             return(setNames(as.numeric(f_val), "F statistic"))
+           } else {
+             return(setNames(as.numeric(result$statistic[[1]]), "F statistic"))
+           }
+         },
+
+         # Proportion test — fixed label
+         "One-proportion test" = {
+           return(setNames(as.numeric(result$estimate[[1]]), "proportion"))
+         },
+
+         # Unknown or unsupported test
+         {
+           return(setNames(NA, "non-existent"))
+         }
+  )
+}
+
+

@@ -344,14 +344,93 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>The <code>automatedtests</code> package automates the selection of
-the most appropriate statistical test based on the characteristics of
-your data. This vignette demonstrates how to use the main function
-<code>automatical_test()</code> to perform automated statistical
-testing.</p>
-<p>The function works with both individual vectors or a data frame and
-provides the results in an easy-to-understand format, which includes the
-test used and all the relevant statistics.</p>
+<p>The <code>automatedtests</code> package automatically selects and
+runs the most appropriate statistical test for your data — no manual
+decision-making needed. The function works with both individual vectors
+or a data frame and provides the results in an easy-to-understand
+format, which includes the test used and all the relevant
+statistics.</p>
+<div id="supported-tests" class="section level3">
+<h3>Supported Tests</h3>
+<table>
+<thead>
+<tr class="header">
+<th>number</th>
+<th>test</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>One-proportion test</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Chi-square goodness-of-fit test</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>One-sample Student’s t-test</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>One-sample Wilcoxon test</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Multiple linear regression</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Binary logistic regression</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Multinomial logistic regression</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Pearson correlation</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Spearman’s rank correlation</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Cochran’s Q test</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>McNemar’s test</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>Fisher’s exact test</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>Chi-square test of independence</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>Student’s t-test for independent samples</td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td>Welch’s t-test for independent samples</td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>Mann-Whitney U test</td>
+</tr>
+<tr class="odd">
+<td>17</td>
+<td>Student’s</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div id="usage-of-automatical_test" class="section level1">
 <h1>Usage of <code>automatical_test()</code></h1>
@@ -398,16 +477,16 @@ tests by setting the <code>paired</code> argument to
 <span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co"># View the result summary</span></span>
 <span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">print</span>(test2<span class="sc">$</span><span class="fu">getResult</span>())</span></code></pre></div>
 <pre><code>## 
-##  Pearson&#39;s product-moment correlation
+##  Paired t-test
 ## 
 ## data:  data[[1]] and data[[2]]
-## t = 16.166, df = 3, p-value = 0.0005149
-## alternative hypothesis: true correlation is not equal to 0
+## t = -7.3333, df = 4, p-value = 0.001841
+## alternative hypothesis: true mean difference is not equal to 0
 ## 95 percent confidence interval:
-##  0.9127389 0.9996431
+##  -6.065867 -2.734133
 ## sample estimates:
-##       cor 
-## 0.9943092</code></pre>
+## mean difference 
+##            -4.4</code></pre>
 <p>By setting <code>paired = TRUE</code>, the function forces the use of
 a paired statistical test, even if identifiers are not provided.</p>
 </div>
@@ -420,13 +499,8 @@ significantly from a specified value.</p>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>test3 <span class="ot">&lt;-</span> <span class="fu">automatical_test</span>(iris<span class="sc">$</span>Sepal.Length, <span class="at">compare_to =</span> <span class="dv">5</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># View the result summary</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">print</span>(test3<span class="sc">$</span><span class="fu">getResult</span>())</span></code></pre></div>
-<pre><code>## 
-##  Wilcoxon signed rank test with continuity correction
-## 
-## data:  data[[1]]
-## V = 9289.5, p-value &lt; 2.2e-16
-## alternative hypothesis: true location is not equal to 5</code></pre>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">print</span>(test3<span class="sc">$</span><span class="fu">getResult</span>()<span class="sc">$</span>p.value)</span></code></pre></div>
+<pre><code>## [1] 1.297119e-19</code></pre>
 <p>In this case, <code>compare_to = 5</code> specifies that we are
 performing a one-sample test where we compare the
 <code>Sepal.Length</code> to the value 5.</p>

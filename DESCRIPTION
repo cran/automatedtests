@@ -1,13 +1,13 @@
 Package: automatedtests
 Type: Package
 Title: Automating Choosing Statistical Tests
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: person(given = "Wouter",
                   family = "Zeevat",
                   role = c("aut", "cre"),
                   email = "wouterzeevat@gmail.com")
 Maintainer: Wouter Zeevat <wouterzeevat@gmail.com>
-Description: A tool for simplifying the selection of appropriate statistical tests based on input data, making statistical workflows easier for users of all experience levels.
+Description: Automatically selects and runs the most appropriate statistical test for your data, returning clear, easy-to-read results. Ideal for all experience levels.
 License: GPL-3
 Encoding: UTF-8
 URL: https://github.com/wouterzeevat/automatedtests
@@ -15,10 +15,10 @@ BugReports: https://github.com/wouterzeevat/automatedtests/issues
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Suggests: knitr, rmarkdown
-Imports: R6, nnet, nortest, stats, RVAideMemoire
-Depends: R (>= 4.0.4)
+Imports: R6, nnet, nortest, stats, DescTools
+Depends: R (>= 4.0)
 NeedsCompilation: no
-Packaged: 2025-05-01 15:54:41 UTC; seaba
+Packaged: 2025-05-21 17:42:34 UTC; seaba
 Author: Wouter Zeevat [aut, cre]
 Repository: CRAN
-Date/Publication: 2025-05-05 10:10:12 UTC
+Date/Publication: 2025-05-21 18:00:02 UTC

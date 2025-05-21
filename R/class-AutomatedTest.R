@@ -61,6 +61,8 @@ AutomatedTest <- R6::R6Class(
       if (private$.paired) {
         return(TRUE)
       }
+
+      # If any id exists twice the identifiers have to be used
       if (length(private$.identifiers) > 1) {
         return(any(duplicated(private$.identifiers)))
       }
@@ -92,7 +94,7 @@ AutomatedTest <- R6::R6Class(
     getDatatypes = function() {
       result <- c()
       for (feature in names(self$getData())) {
-        if (is.numeric(self$getData()[[feature]]) && all(!(unique(self$getData()[[feature]]) %in% c(0,1)))) {
+        if (is.numeric(self$getData()[[feature]]) && !all((unique(self$getData()[[feature]]) %in% c(0,1)))) {
           result <- append(result, "Quantitative")
         } else {
           result <- append(result, "Qualitative")
@@ -136,6 +138,23 @@ AutomatedTest <- R6::R6Class(
       return(private$.result)
     },
 
+    #' @description Get the strength(s) of selected statistical test.
+    #' @return A named numeric value indicating the strength of the result.
+    #' The type and meaning depend on the test used:
+    #' \describe{
+    #'   \item{coefficient}{Effect size and direction of predictors in regression}
+    #'   \item{r}{Correlation strength and direction}
+    #'   \item{mean difference}{Difference in group means}
+    #'   \item{statistic}{Test statistic measuring group difference or association}
+    #'   \item{F statistic}{Ratio of variances across groups}
+    #'   \item{proportion}{Estimated success rate in the sample}
+    #'   \item{non-existent}{No interpretable strength measure available}
+    #' }
+    #'
+    getStrength = function() {
+      return(get_strength_from_test(self))
+    },
+
     #' @description Whether the test results are significant or not.
     #' @return TRUE / FALSE depending on the significance of the test.
     isSignificant = function() {
@@ -154,8 +173,41 @@ AutomatedTest <- R6::R6Class(
       }
 
       cat("Test: ", self$getTest(), "\n")
-      cat("Results:\n  p.value: ", self$getResult()$p.value, "\n")
-      cat("  Significant: ", self$isSignificant(), "\n")
+      cat("Results: \n")
+
+      # Table output for multiple p-values to get better readability
+      p_vals     <- self$getResult()$p.value
+      strengths  <- self$getStrength()[[1]]
+      sig_flags  <- self$isSignificant()
+
+      if (length(p_vals) > 1) {
+
+        colored_sig <- sapply(sig_flags, function(val) {
+          if (isTRUE(val)) "\033[32mTRUE\033[0m" else "\033[31mFALSE\033[0m"
+        })
+
+        # CHATGPT ----------
+        cat(sprintf("  %-25s %-12s %-25s %s\n", "Name", "p.value", paste("Strength (", names(self$getStrength()), ")"), "Significant"))
+        for (i in seq_along(p_vals)) {
+          name <- names(p_vals)[i]
+          if (is.null(name) || name == "") name <- paste0("Var", i)
+
+          cat(sprintf(
+            "  %-25s %-12.4g %-25.4g %s\n",
+            name,
+            p_vals[i],
+            strengths[i],
+            colored_sig[i]
+          ))
+        }
+        # -----------------
+
+      } else {
+        cat("  p.value: ", p_vals, "\n")
+        cat("  Strength: ", names(self$getStrength())[[1]], "=", round(strengths, 3), "\n")
+        sig_colored <- if (isTRUE(sig_flags)) "\033[32mTRUE\033[0m" else "\033[31mFALSE\033[0m"
+        cat("  Significant: ", sig_colored, "\n")
+      }
     }
   )
 )
