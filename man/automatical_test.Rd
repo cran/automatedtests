@@ -28,7 +28,7 @@
 \value{
   An object of class \code{AutomatedTest}.
   The object contains the results of the statistical test performed on the data.
-  You can use the method \code{$getResult()} to obtain more detailed information about the execution of the test.
+  You can use the method \code{$get_result()} to obtain more detailed information about the execution of the test.
 }
 \details{
   The \code{automatical_test} function automatically selects and runs the most fitting statistical test based on the data provided.
@@ -44,7 +44,7 @@
 
   If you want to override the defaults, you can change the \code{compare_to} value to specify one-sample tests.
 
-  Once the test has been executed, you can use the method \code{$getResult()} on the resulting object to get more detailed information about the test's execution, including a summary of the test used and all statistics.
+  Once the test has been executed, you can use the method \code{$get_result()} on the resulting object to get more detailed information about the test's execution, including a summary of the test used and all statistics.
 
   Supported tests:
   \tabular{rl}{
@@ -65,8 +65,15 @@
   14 \tab Student's t-test for independent samples \cr
   15 \tab Welch's t-test for independent samples \cr
   16 \tab Mann-Whitney U test \cr
-  17 \tab Student's \cr
-  }
+  17 \tab Student's t-test for paired samples \cr
+  18 \tab Wilcoxon signed-rank test \cr
+  19 \tab One-way ANOVA \cr
+  20 \tab Welch's ANOVA \cr
+  21 \tab Repeated measures ANOVA \cr
+  22 \tab Kruskal-Wallis test \cr
+  23 \tab Friedman test \cr
+}
+
 }
 \examples{
   # Example 1: Using individual vectors
@@ -79,7 +86,7 @@
   test2 <- automatical_test(before, after, paired = TRUE)
 
   # Retrieve more detailed information about the test
-  # test1$getResult()
+  # test1$get_result()
 }
 \author{
   Wouter Zeevat

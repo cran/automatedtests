@@ -16,16 +16,16 @@ AutomatedTest <- R6::R6Class(
     .paired = NULL,
 
     # Private methods
-    .setTest = function(test) {
+    .set_test = function(test) {
       stopifnot(is.character(test))
       private$.test <- test
     },
 
-    .setResult = function(result) {
+    .set_result = function(result) {
       private$.result <- result
     },
 
-    .setParametricList = function(parametric) {
+    .set_parametric_list = function(parametric) {
       private$.parametric_list <- parametric
     }
   ),
@@ -43,13 +43,13 @@ AutomatedTest <- R6::R6Class(
       private$.compare_to <- compare_to
       private$.paired <- paired
 
-      private$.setTest(pick_test(test_object = self))
-      private$.setResult(get_test_from_string(test_object = self))
+      private$.set_test(pick_test(test_object = self))
+      private$.set_result(get_test_from_string(test_object = self))
     },
 
     #' @description Get the data used in the test
     #' @return A dataframe with all features
-    getData = function() {
+    get_data = function() {
       return(private$.data)
     },
 
@@ -57,7 +57,7 @@ AutomatedTest <- R6::R6Class(
     #' samples (TIDY DATA). Making the data paired.
     #'
     #' @return Whether the data is paired (TRUE/FALSE).
-    isPaired = function() {
+    is_paired = function() {
       if (private$.paired) {
         return(TRUE)
       }
@@ -71,30 +71,32 @@ AutomatedTest <- R6::R6Class(
 
     #' @description A list of the identifiers used for the data
     #' @return Returns the identifiers
-    getIdentifiers = function() {
+    get_identifiers = function() {
       return(private$.identifiers)
     },
 
     #' @description Get the comparison value for one-sample tests
     #' @return A numeric value for comparison
-    getCompareTo = function() {
+    get_compare_to = function() {
       return(private$.compare_to)
     },
 
     #' @description Updates the compare_to variable. Is public because the
-    #' compare value can get changed depending on the type of test.
+    #' compare value can get changed depending on the type of test. This
+    #' function is public because it needs to be able to be called by
+    #' automatical_test()
     #' @param compare_to Numeric value to compare to.
     #' @return Updated object with comparison value set.
-    setCompareTo = function(compare_to) {
+    set_compare_co = function(compare_to) {
       private$.compare_to <- compare_to
     },
 
     #' @description Get the data types of the features in the object
     #' @return A list of data types (e.g., Quantitative or Qualitative)
-    getDatatypes = function() {
+    get_datatypes = function() {
       result <- c()
-      for (feature in names(self$getData())) {
-        if (is.numeric(self$getData()[[feature]]) && !all((unique(self$getData()[[feature]]) %in% c(0,1)))) {
+      for (feature in names(self$get_data())) {
+        if (is.numeric(self$get_data()[[feature]]) && !all((unique(self$get_data()[[feature]]) %in% c(0,1)))) {
           result <- append(result, "Quantitative")
         } else {
           result <- append(result, "Qualitative")
@@ -105,36 +107,56 @@ AutomatedTest <- R6::R6Class(
 
     #' @description Get the parametric test results of the features
     #' @return A list of parametric test results
-    getParametricList = function() {
-      parametric_list <- list()
-      for (name in colnames(self$getData())) {
-        feature <- self$getData()[[name]]
-        parametric_list[[length(parametric_list) + 1]] <- check_parametric(feature)
+    get_parametric_list = function() {
+
+      parametric_list <- data.frame(
+        Feature = character(),
+        result = logical(),
+        p_value = numeric(),
+        test = logical(),
+        statistic = numeric(),
+        stringsAsFactors = FALSE
+      )
+
+      for (name in colnames(self$get_data())) {
+        feature = self$get_data()[[name]]
+        result = check_parametric(feature)
+
+        # Ignore qualitative
+        if (is.null(result)) {
+          next
+        }
+
+        df = data.frame(
+          Feature = name,
+          result = result$result,
+          p_value = result$p_value,
+          test = result$test,
+          statistic = result$statistic,
+          stringsAsFactors = FALSE
+        )
+
+        parametric_list = rbind(parametric_list, df)
       }
+      rownames(parametric_list) <- NULL
       return(parametric_list)
     },
 
     #' @description Check if the data meets parametric assumptions
     #' @return TRUE if parametric assumptions are met, otherwise FALSE
-    isParametric = function() {
-      result <- sapply(self$getParametricList(), function(x) {
-        if (is.null(x)) {
-          return(NULL)  # Skip this iteration if x is NULL
-        }
-        return(x$result == TRUE)
-      })
-      return(all(result))
+    is_parametric = function() {
+      return(all(self$get_parametric_list()$result))
     },
 
     #' @description Get the statistical test that was chosen
     #' @return The name of the statistical test
-    getTest = function() {
+    get_test = function() {
       return(private$.test)
     },
 
     #' @description Get the result of selected statistical test
     #' @return The result of the statistical test
-    getResult = function() {
+    get_result = function() {
       return(private$.result)
     },
 
@@ -151,34 +173,37 @@ AutomatedTest <- R6::R6Class(
     #'   \item{non-existent}{No interpretable strength measure available}
     #' }
     #'
-    getStrength = function() {
+    get_strength = function() {
       return(get_strength_from_test(self))
     },
 
     #' @description Whether the test results are significant or not.
     #' @return TRUE / FALSE depending on the significance of the test.
-    isSignificant = function() {
-      return(self$getResult()$p.value < 0.05)
+    is_significant = function() {
+      return(self$get_result()$p.value < 0.05)
     },
 
     #' @description Print a summary of the test object
     print = function() {
+
+      result <- self$get_result()
+
       cat("Automated Test:\n")
-      cat("Data: ", paste0(colnames(self$getData()), collapse = ", "), "\n")
+      cat("Data: ", paste0(colnames(self$get_data()), collapse = ", "), "\n")
 
       # If one sample test
-      size <- ncol(self$getData())
+      size <- ncol(self$get_data())
       if (size == 1) {
-        cat("Compared to: ", self$getCompareTo(), "\n")
+        cat("Compared to: ", self$get_compare_to(), "\n")
       }
 
-      cat("Test: ", self$getTest(), "\n")
+      cat("Test: ", self$get_test(), "\n")
       cat("Results: \n")
 
       # Table output for multiple p-values to get better readability
-      p_vals     <- self$getResult()$p.value
-      strengths  <- self$getStrength()[[1]]
-      sig_flags  <- self$isSignificant()
+      p_vals     <- result$p.value
+      strengths  <- self$get_strength()[[1]]
+      sig_flags  <- self$is_significant()
 
       if (length(p_vals) > 1) {
 
@@ -187,7 +212,7 @@ AutomatedTest <- R6::R6Class(
         })
 
         # CHATGPT ----------
-        cat(sprintf("  %-25s %-12s %-25s %s\n", "Name", "p.value", paste("Strength (", names(self$getStrength()), ")"), "Significant"))
+        cat(sprintf("  %-25s %-12s %-25s %s\n", "Name", "p.value", paste("Strength (", names(self$get_strength()), ")"), "Significant"))
         for (i in seq_along(p_vals)) {
           name <- names(p_vals)[i]
           if (is.null(name) || name == "") name <- paste0("Var", i)
@@ -204,7 +229,7 @@ AutomatedTest <- R6::R6Class(
 
       } else {
         cat("  p.value: ", p_vals, "\n")
-        cat("  Strength: ", names(self$getStrength())[[1]], "=", round(strengths, 3), "\n")
+        cat("  Strength: ", names(self$get_strength())[[1]], "=", round(strengths, 3), "\n")
         sig_colored <- if (isTRUE(sig_flags)) "\033[32mTRUE\033[0m" else "\033[31mFALSE\033[0m"
         cat("  Significant: ", sig_colored, "\n")
       }

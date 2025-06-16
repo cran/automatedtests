@@ -6,7 +6,7 @@ library(automatedtests)
 test1 <- automatical_test(iris$Species, iris$Sepal.Length, identifiers = FALSE)
 
 # View the result summary
-print(test1$getResult())
+print(test1$get_result())
 
 ## -----------------------------------------------------------------------------
 # Example 2: Forcing a paired test
@@ -18,12 +18,12 @@ paired_data <- data.frame(before, after)
 test2 <- automatical_test(before, after, paired = TRUE)
 
 # View the result summary
-print(test2$getResult())
+print(test2$get_result())
 
 ## -----------------------------------------------------------------------------
 # Example 3: One-sample test
 test3 <- automatical_test(iris$Sepal.Length, compare_to = 5)
 
 # View the result summary
-print(test3$getResult()$p.value)
+print(test3$get_result()$p.value)
 

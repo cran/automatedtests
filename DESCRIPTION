@@ -1,7 +1,7 @@
 Package: automatedtests
 Type: Package
 Title: Automating Choosing Statistical Tests
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: person(given = "Wouter",
                   family = "Zeevat",
                   role = c("aut", "cre"),
@@ -18,7 +18,7 @@ Suggests: knitr, rmarkdown
 Imports: R6, nnet, nortest, stats, DescTools
 Depends: R (>= 4.0)
 NeedsCompilation: no
-Packaged: 2025-05-21 17:42:34 UTC; seaba
+Packaged: 2025-06-16 17:31:41 UTC; seaba
 Author: Wouter Zeevat [aut, cre]
 Repository: CRAN
-Date/Publication: 2025-05-21 18:00:02 UTC
+Date/Publication: 2025-06-16 17:50:02 UTC

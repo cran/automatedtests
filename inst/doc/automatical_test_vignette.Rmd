@@ -11,29 +11,36 @@ vignette: >
 
 # Introduction
 
-The `automatedtests` package automatically selects and runs the most appropriate statistical test for your data — no manual decision-making needed.
+The `automatedtests` package automatically selects and runs the most appropriate statistical test for your data, no manual decision-making needed.
 The function works with both individual vectors or a data frame and provides the results in an easy-to-understand format, which includes the test used and all the relevant statistics.
 
 ### Supported Tests
-| number     | test |
-|--------------|-------------|
-| 1 | One-proportion test
-| 2 | Chi-square goodness-of-fit test
-| 3 | One-sample Student's t-test
-| 4 | One-sample Wilcoxon test
-| 5 | Multiple linear regression
-| 6 | Binary logistic regression
-| 7 | Multinomial logistic regression
-| 8 | Pearson correlation
-| 9 | Spearman's rank correlation
-| 10 | Cochran's Q test
-| 11 | McNemar's test
-| 12 | Fisher's exact test
-| 13 | Chi-square test of independence
-| 14 | Student's t-test for independent samples
-| 15 | Welch's t-test for independent samples
-| 16 | Mann-Whitney U test
-| 17 | Student's
+| Number | Test                                     |
+| ------ | ---------------------------------------- |
+| 1      | One-proportion test                      |
+| 2      | Chi-square goodness-of-fit test          |
+| 3      | One-sample Student's t-test              |
+| 4      | One-sample Wilcoxon test                 |
+| 5      | Multiple linear regression               |
+| 6      | Binary logistic regression               |
+| 7      | Multinomial logistic regression          |
+| 8      | Pearson correlation                      |
+| 9      | Spearman's rank correlation              |
+| 10     | Cochran's Q test                         |
+| 11     | McNemar's test                           |
+| 12     | Fisher's exact test                      |
+| 13     | Chi-square test of independence          |
+| 14     | Student's t-test for independent samples |
+| 15     | Welch's t-test for independent samples   |
+| 16     | Mann-Whitney U test                      |
+| 17     | Student's t-test for paired samples      |
+| 18     | Wilcoxon signed-rank test                |
+| 19     | One-way ANOVA                            |
+| 20     | Welch's ANOVA                            |
+| 21     | Repeated measures ANOVA                  |
+| 22     | Kruskal-Wallis test                      |
+| 23     | Friedman test                            |
+
 
 # Usage of `automatical_test()`
 
@@ -51,7 +58,7 @@ library(automatedtests)
 test1 <- automatical_test(iris$Species, iris$Sepal.Length, identifiers = FALSE)
 
 # View the result summary
-print(test1$getResult())
+print(test1$get_result())
 ```
 
 In this case, the function automatically selects the best statistical test based on the data's distribution and other characteristics.
@@ -70,7 +77,7 @@ paired_data <- data.frame(before, after)
 test2 <- automatical_test(before, after, paired = TRUE)
 
 # View the result summary
-print(test2$getResult())
+print(test2$get_result())
 ```
 
 By setting `paired = TRUE`, the function forces the use of a paired statistical test, even if identifiers are not provided.
@@ -84,7 +91,7 @@ You can override the default `compare_to` value to perform one-sample tests. For
 test3 <- automatical_test(iris$Sepal.Length, compare_to = 5)
 
 # View the result summary
-print(test3$getResult()$p.value)
+print(test3$get_result()$p.value)
 ```
 
 In this case, `compare_to = 5` specifies that we are performing a one-sample test where we compare the `Sepal.Length` to the value 5.
@@ -93,7 +100,7 @@ In this case, `compare_to = 5` specifies that we are performing a one-sample tes
 
 The `automatical_test()` function simplifies the process of selecting and running statistical tests. It automatically picks the most appropriate test based on the data's structure and characteristics. You can fine-tune its behavior with options like `compare_to`, `identifiers`, and `paired`.
 
-For more detailed information on the results of each test, you can use the `getResult()` method to retrieve a summary of the test performed.
+For more detailed information on the results of each test, you can use the `get_result()` method to retrieve a summary of the test performed.
 
 # See Also
 

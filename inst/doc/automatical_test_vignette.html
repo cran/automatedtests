@@ -345,7 +345,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>The <code>automatedtests</code> package automatically selects and
-runs the most appropriate statistical test for your data — no manual
+runs the most appropriate statistical test for your data, no manual
 decision-making needed. The function works with both individual vectors
 or a data frame and provides the results in an easy-to-understand
 format, which includes the test used and all the relevant
@@ -355,8 +355,8 @@ statistics.</p>
 <table>
 <thead>
 <tr class="header">
-<th>number</th>
-<th>test</th>
+<th>Number</th>
+<th>Test</th>
 </tr>
 </thead>
 <tbody>
@@ -426,7 +426,31 @@ statistics.</p>
 </tr>
 <tr class="odd">
 <td>17</td>
-<td>Student’s</td>
+<td>Student’s t-test for paired samples</td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>Wilcoxon signed-rank test</td>
+</tr>
+<tr class="odd">
+<td>19</td>
+<td>One-way ANOVA</td>
+</tr>
+<tr class="even">
+<td>20</td>
+<td>Welch’s ANOVA</td>
+</tr>
+<tr class="odd">
+<td>21</td>
+<td>Repeated measures ANOVA</td>
+</tr>
+<tr class="even">
+<td>22</td>
+<td>Kruskal-Wallis test</td>
+</tr>
+<tr class="odd">
+<td>23</td>
+<td>Friedman test</td>
 </tr>
 </tbody>
 </table>
@@ -447,10 +471,13 @@ the best statistical test for these vectors.</p>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(automatedtests)</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># Example 1: Using individual vectors from the iris dataset</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>test1 <span class="ot">&lt;-</span> <span class="fu">automatical_test</span>(iris<span class="sc">$</span>Species, iris<span class="sc">$</span>Sepal.Length, <span class="at">identifiers =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co"># View the result summary</span></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="fu">print</span>(test1<span class="sc">$</span><span class="fu">getResult</span>())</span></code></pre></div>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>test1 <span class="ot">&lt;-</span> <span class="fu">automatical_test</span>(iris<span class="sc">$</span>Species, iris<span class="sc">$</span>Sepal.Length, <span class="at">identifiers =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<pre><code>## Warning in automatical_test(iris$Species, iris$Sepal.Length, identifiers = FALSE): Normality test suggests the data may not be normally distributed.
+##     It is recommended to visually inspect the data using a Q-Q plot.
+##     If the data is in fact parametric but contains outliers,
+##     consider manually applying normalization or transformation before proceeding</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># View the result summary</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">print</span>(test1<span class="sc">$</span><span class="fu">get_result</span>())</span></code></pre></div>
 <pre><code>## 
 ##  Kruskal-Wallis rank sum test
 ## 
@@ -466,16 +493,16 @@ collected before and after an intervention. The
 <code>automatical_test()</code> function can be instructed to use paired
 tests by setting the <code>paired</code> argument to
 <code>TRUE</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Example 2: Forcing a paired test</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>before <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">200</span>, <span class="dv">220</span>, <span class="dv">215</span>, <span class="dv">205</span>, <span class="dv">210</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>after <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">202</span>, <span class="dv">225</span>, <span class="dv">220</span>, <span class="dv">210</span>, <span class="dv">215</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>paired_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(before, after)</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"># Perform the paired test</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>test2 <span class="ot">&lt;-</span> <span class="fu">automatical_test</span>(before, after, <span class="at">paired =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co"># View the result summary</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">print</span>(test2<span class="sc">$</span><span class="fu">getResult</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Example 2: Forcing a paired test</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>before <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">200</span>, <span class="dv">220</span>, <span class="dv">215</span>, <span class="dv">205</span>, <span class="dv">210</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>after <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">202</span>, <span class="dv">225</span>, <span class="dv">220</span>, <span class="dv">210</span>, <span class="dv">215</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>paired_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(before, after)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co"># Perform the paired test</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>test2 <span class="ot">&lt;-</span> <span class="fu">automatical_test</span>(before, after, <span class="at">paired =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co"># View the result summary</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="fu">print</span>(test2<span class="sc">$</span><span class="fu">get_result</span>())</span></code></pre></div>
 <pre><code>## 
 ##  Paired t-test
 ## 
@@ -495,11 +522,14 @@ a paired statistical test, even if identifiers are not provided.</p>
 <p>You can override the default <code>compare_to</code> value to perform
 one-sample tests. For example, you can test whether the data differs
 significantly from a specified value.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Example 3: One-sample test</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>test3 <span class="ot">&lt;-</span> <span class="fu">automatical_test</span>(iris<span class="sc">$</span>Sepal.Length, <span class="at">compare_to =</span> <span class="dv">5</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># View the result summary</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">print</span>(test3<span class="sc">$</span><span class="fu">getResult</span>()<span class="sc">$</span>p.value)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Example 3: One-sample test</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>test3 <span class="ot">&lt;-</span> <span class="fu">automatical_test</span>(iris<span class="sc">$</span>Sepal.Length, <span class="at">compare_to =</span> <span class="dv">5</span>)</span></code></pre></div>
+<pre><code>## Warning in automatical_test(iris$Sepal.Length, compare_to = 5): Normality test suggests the data may not be normally distributed.
+##     It is recommended to visually inspect the data using a Q-Q plot.
+##     If the data is in fact parametric but contains outliers,
+##     consider manually applying normalization or transformation before proceeding</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># View the result summary</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">print</span>(test3<span class="sc">$</span><span class="fu">get_result</span>()<span class="sc">$</span>p.value)</span></code></pre></div>
 <pre><code>## [1] 1.297119e-19</code></pre>
 <p>In this case, <code>compare_to = 5</code> specifies that we are
 performing a one-sample test where we compare the
@@ -515,7 +545,7 @@ You can fine-tune its behavior with options like
 <code>compare_to</code>, <code>identifiers</code>, and
 <code>paired</code>.</p>
 <p>For more detailed information on the results of each test, you can
-use the <code>getResult()</code> method to retrieve a summary of the
+use the <code>get_result()</code> method to retrieve a summary of the
 test performed.</p>
 </div>
 <div id="see-also" class="section level1">
